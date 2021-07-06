@@ -61,3 +61,9 @@ cartOverlay.addEventListener("click", (event) => {
     cartModalClose();
   }
 });
+
+document.addEventListener("keyup", (event) => {
+  if ((event.keyCode = 27)) {
+    cartModalClose();
+  }
+});
