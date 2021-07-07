@@ -1,4 +1,4 @@
-# LaMode- Учебный проект Glo Academy
+# LaModa - Учебный проект Glo Academy
 Выполнил проект ShadVlad
 ## Использованы языки
 - HTML
