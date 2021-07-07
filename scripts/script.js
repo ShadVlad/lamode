@@ -1,9 +1,10 @@
 const headerCityButton = document.querySelector(".header__city-button");
 //console.log("headerCityButton: ", headerCityButton);
-
 // if (localStorage.getItem("lomoda-location")) {
 //   headerCityButton.textContent = localStorage.getItem("lomoda-location");
 // }
+
+let hash = location.hash.substring(1);
 
 headerCityButton.textContent =
   localStorage.getItem("lomoda-location") || "Ваш город?";
@@ -52,6 +53,36 @@ const cartModalClose = () => {
   enableScroll();
 };
 
+// запрос базы данных
+
+const getData = async () => {
+  const data = await fetch("db.json");
+
+  if (data.ok) {
+    return data.json();
+  } else {
+    throw new Error(
+      `Данные не были получены, ошибка ${data.status} ${data.statusText}`
+    );
+  }
+};
+
+const getGoods = (callback, value) => {
+  getData().then(
+    (data) => {
+      if (value) {
+        callback(data.filter((item) => item.category === value));
+      } else callback(data);
+    },
+    (err) => {
+      console.error(err);
+    }
+  );
+};
+
+// getGoods((data) => {
+//   console.warn("data: ", data);
+// });
 subheaderCart.addEventListener("click", cartModalOpen);
 
 cartOverlay.addEventListener("click", (event) => {
@@ -68,3 +99,77 @@ document.addEventListener("keyup", (event) => {
     cartModalClose();
   }
 });
+
+try {
+  const goodsTitle = document.querySelector(".goods__title");
+  const goodsList = document.querySelector(".goods__list");
+  if (!goodsList) {
+    throw "This is not a goods page!";
+  }
+
+  const createCard = ({ id, preview, cost, brand, name, sizes }) => {
+    // const id = data.id;
+    // const preview = data.preview;
+    // const cost = data.cost;
+    // const brand = data.brand;
+    // const name = data.name;
+    // const sizes = data.sizes;
+
+    const li = document.createElement("li");
+    li.classList.add("goods__item");
+
+    li.innerHTML = `
+      <article class="good">
+        <a class="good__link-img" href="card-good.html#${id}">
+          <img class="good__img" src="goods-image/${preview}" alt="">
+        </a>
+        <div class="good__description">
+          <p class="good__price">${cost} &#8381;</p>
+          <h3 class="good__title">${brand} <span class="good__title__grey">/ ${name}</span></h3>
+          ${
+            sizes
+              ? `<p class="good__sizes">Размеры (RUS): <span class="good__sizes-list">${sizes.join(
+                  " "
+                )}</span>
+          </p>`
+              : ""
+          }
+          
+          <a class="good__link" href="card-good.html#${id}">Подробнее</a>
+        </div>
+      </article>
+    `;
+
+    return li;
+  };
+
+  const renderGoodList = (data) => {
+    //console.log("data: ", data);
+    goodsList.textContent = "";
+
+    goodsTitle.textContent =
+      hash === "men" ? "Мужчинам" : hash === "women" ? "Женщинам" : "Детям";
+
+    // for (let i = 0; i < data.length; i++) {
+    //   console.log("data[i]: ", data[i]);
+    // }
+
+    // for (const item of data) {
+    //   console.log("item: ", item);
+    // }
+
+    data.forEach((item) => {
+      //console.log("for each: ", item);
+      const card = createCard(item);
+      goodsList.append(card);
+    });
+  };
+
+  window.addEventListener("hashchange", () => {
+    hash = location.hash.substring(1);
+    getGoods(renderGoodList, hash);
+  });
+  getGoods(renderGoodList, hash);
+} catch (err) {
+  console.warn("err: ", err);
+}
